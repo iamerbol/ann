@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Калькулятор пенсионного аннуитета</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <h1>Калькулятор пенсионного аннуитета</h1>
+    <form id="calculator-form">
+        <label for="birth_date">Дата рождения:</label>
+        <input type="date" id="birth_date" name="birth_date" required><br>
+
+        <label for="gender">Пол:</label>
+        <select id="gender" name="gender" required>
+            <option value="мужской">Мужской</option>
+            <option value="женский">Женский</option>
+        </select><br>
+
+        <label for="guaranteed_period">Гарантированный период (лет):</label>
+        <input type="number" id="guaranteed_period" name="guaranteed_period" min="1" max="50" required><br>
+
+        <label for="amount">Сумма переводимая из ЕНПФ:</label>
+        <input type="number" id="amount" name="amount" required><br>
+
+        <label for="disability">Инвалидность:</label>
+        <select id="disability" name="disability" required>
+            <option value="нет">Нет</option>
+            <option value="первая группа">Первая группа</option>
+            <option value="вторая группа">Вторая группа</option>
+            <option value="третья группа">Третья группа</option>
+        </select><br>
+
+        <label for="oppv">Наличие ОППВ:</label>
+        <select id="oppv" name="oppv" required>
+            <option value="нет">Нет</option>
+            <option value="да">Да</option>
+        </select><br>
+
+        <button type="submit">Рассчитать</button>
+    </form>
+
+    <h2>Результаты:</h2>
+    <p>Минимальная сумма страховой премии: <span id="minimal_premium"></span></p>
+
+    <script>
+        document.getElementById('calculator-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const formData = {
+                birth_date: document.getElementById('birth_date').value,
+                gender: document.getElementById('gender').value,
+                guaranteed_period: document.getElementById('guaranteed_period').value,
+                amount: document.getElementById('amount').value,
+                disability: document.getElementById('disability').value,
+                oppv: document.getElementById('oppv').value
+            };
+
+            fetch('/calculate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formData),
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.minimal_premium) {
+                    document.getElementById('minimal_premium').textContent = data.minimal_premium;
+                } else if (data.error) {
+                    alert('Ошибка: ' + data.error);
+                }
+            });
+        });
+    </script>
+</body>
+</html>
